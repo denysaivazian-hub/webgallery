@@ -1,0 +1,13 @@
+services:
+  server:
+    build:
+      context: ./server
+      target: development
+    ports:
+      - "8090:8090"
+    environment:
+      PORT: "8090"
+    volumes:
+      - ./server:/app
+    init: true
+    restart: unless-stopped

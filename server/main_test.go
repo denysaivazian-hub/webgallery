@@ -104,6 +104,43 @@ func TestUnknownRoute(t *testing.T) {
 	}
 }
 
+func TestServePNGFile(t *testing.T) {
+	uploadDir := t.TempDir()
+	want := []byte("png contents")
+	if err := os.WriteFile(filepath.Join(uploadDir, "example.png"), want, 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "/files/example.png", nil)
+	res := httptest.NewRecorder()
+	newHandlerWithStorage(uploadDir).ServeHTTP(res, req)
+
+	if res.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d", res.Code, http.StatusOK)
+	}
+	if got := res.Header().Get("Content-Type"); got != "image/png" {
+		t.Errorf("Content-Type = %q, want image/png", got)
+	}
+	if !bytes.Equal(res.Body.Bytes(), want) {
+		t.Errorf("body = %q, want %q", res.Body.Bytes(), want)
+	}
+}
+
+func TestServeFileRejectsNonPNG(t *testing.T) {
+	uploadDir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(uploadDir, "secret.txt"), []byte("secret"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "/files/secret.txt", nil)
+	res := httptest.NewRecorder()
+	newHandlerWithStorage(uploadDir).ServeHTTP(res, req)
+
+	if res.Code != http.StatusNotFound {
+		t.Fatalf("status = %d, want %d", res.Code, http.StatusNotFound)
+	}
+}
+
 func multipartRequest(t *testing.T, field, filename string, data []byte) *http.Request {
 	t.Helper()
 

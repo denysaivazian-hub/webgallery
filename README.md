@@ -109,6 +109,17 @@ The validated image is saved in `UPLOAD_DIR` with a unique name such as
 `upload-123456789.png`. The same PNG is returned in the response body, and the
 generated filename is included in the `X-Stored-Filename` response header.
 
+### `GET /files/{name}.png`
+
+Returns a stored PNG image by its generated filename:
+
+```bash
+curl http://localhost:8090/files/upload-123456789.png --output image.png
+```
+
+Only direct `.png` filenames are served. Other extensions, missing files, and
+nested paths return `404 Not Found`.
+
 Browser requests are allowed from `http://localhost:5173` by the CORS policy.
 
 ## Start the React client

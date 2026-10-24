@@ -125,6 +125,18 @@ func newHandlerWithStorage(uploadDir string) http.Handler {
 		}
 	})
 
+	mux.HandleFunc("GET /files/{name}", func(w http.ResponseWriter, req *http.Request) {
+		name := req.PathValue("name")
+		if filepath.Ext(name) != ".png" || filepath.Base(name) != name {
+			http.NotFound(w, req)
+			return
+		}
+
+		w.Header().Set("Content-Type", "image/png")
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		http.ServeFile(w, req, filepath.Join(uploadDir, name))
+	})
+
 	return corsMiddleware(mux)
 }
 
